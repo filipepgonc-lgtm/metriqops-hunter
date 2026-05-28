@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetriqOps — Prospect Hunter</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#0a0a08;--dark:#0e0e0c;--dark2:#141412;--dark3:#1a1a18;
+  --border:#222220;--copper:#A0704A;--copper2:#C08A62;
+  --copper-dim:rgba(160,112,74,0.12);
+  --cream:#E8DDD0;--cream-dim:#8a7e70;--muted:#4a4a42;
+  --green:#4a9e6e;--red:#c0392b;--blue:#4a7ab5;--amber:#b8841a;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--black);color:var(--cream);font-family:'Manrope',sans-serif;font-weight:300}
+body{display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--dark);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo-main{font-family:'Playfair Display',serif;font-size:17px}
+.logo-main span{color:var(--copper)}
+.logo-sub{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-left:10px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hstatus{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.layout{flex:1;overflow:hidden;display:grid;grid-template-columns:280px 1fr}
+.sidebar{background:var(--dark2);border-right:1px solid var(--border);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.slabel{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--copper);display:block;margin-bottom:7px}
+input,select{background:var(--dark3);border:1px solid var(--border);border-radius:7px;color:var(--cream);font-family:'Manrope',sans-serif;font-size:13px;font-weight:300;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus{border-color:var(--copper)}
+input::placeholder{color:var(--muted)}
+select option{background:var(--dark)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tag{background:var(--dark3);border:1px solid var(--border);border-radius:100px;padding:4px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Manrope',sans-serif;transition:all .15s}
+.tag:hover,.tag.on{background:var(--copper-dim);border-color:rgba(160,112,74,.4);color:var(--copper)}
+.hunt-btn{background:var(--copper);color:#000;border:none;border-radius:7px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:13px;cursor:pointer;transition:all .2s;text-transform:uppercase;width:100%;margin-top:4px}
+.hunt-btn:hover{background:var(--copper2)}
+.hunt-btn:disabled{opacity:.4;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--dark3);border:1px solid var(--border);border-radius:7px;padding:12px;text-align:center}
+.stat-n{font-size:22px;font-weight:400;color:var(--copper);line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.main{overflow:hidden;display:flex;flex-direction:column}
+.topbar{background:var(--dark2);border-bottom:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.results{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted);text-align:center;padding:2rem}
+.empty-icon{font-size:40px;opacity:.2}
+.spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--copper);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:var(--dark2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:rgba(160,112,74,.3)}
+.card.open{border-color:rgba(160,112,74,.45)}
+.card-head{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.card-head:hover{background:rgba(255,255,255,.02)}
+.avatar{width:36px;height:36px;border-radius:8px;background:var(--copper-dim);border:1px solid rgba(160,112,74,.2);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:13px;color:var(--copper);flex-shrink:0}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.card-sub{font-size:11px;color:var(--muted)}
+.card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.badge{display:inline-flex;padding:2px 7px;border-radius:100px;font-size:10px;font-weight:600;border:1px solid}
+.b-c{background:var(--copper-dim);color:var(--copper);border-color:rgba(160,112,74,.3)}
+.b-g{background:rgba(74,158,110,.08);color:var(--green);border-color:rgba(74,158,110,.2)}
+.b-b{background:rgba(74,122,181,.08);color:var(--blue);border-color:rgba(74,122,181,.2)}
+.b-m{background:rgba(255,255,255,.04);color:var(--muted);border-color:var(--border)}
+.score{flex-shrink:0;text-align:center}
+.score-n{font-size:19px;font-weight:500;line-height:1;margin-bottom:2px}
+.score-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.card-body{background:var(--dark3);border-top:1px solid var(--border);padding:16px;display:none}
+.card.open .card-body{display:block}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.di{display:flex;flex-direction:column;gap:3px}
+.dl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--copper)}
+.dv{font-size:12px;color:var(--cream-dim);line-height:1.6}
+.dv a{color:var(--copper);text-decoration:none}
+.dv a:hover{text-decoration:underline}
+.mtabs{display:flex;gap:5px;margin-bottom:8px}
+.mtab{background:var(--dark2);border:1px solid var(--border);border-radius:100px;padding:4px 11px;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Manrope',sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .15s}
+.mtab.on{background:var(--copper-dim);border-color:rgba(160,112,74,.35);color:var(--copper)}
+.msg-box{background:var(--dark2);border:1px solid var(--border);border-left:3px solid var(--copper);border-radius:0 7px 7px 0;padding:13px;font-size:13px;color:var(--cream-dim);line-height:1.85;white-space:pre-wrap;margin-bottom:10px}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn-c{background:var(--copper);color:#000;border:none;border-radius:6px;font-family:'Manrope',sans-serif;font-size:11px;font-weight:700;padding:8px 14px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+.btn-c:hover{background:var(--copper2)}
+.btn-c.done{background:rgba(74,158,110,.2);color:var(--green)}
+.btn-l{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--cream-dim);font-family:'Manrope',sans-serif;font-size:11px;font-weight:600;padding:8px 13px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+.btn-l:hover{border-color:var(--copper);color:var(--copper)}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--dark2);border:1px solid var(--green);border-radius:7px;padding:10px 16px;font-size:12px;z-index:999;transform:translateY(40px);opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#2a2a26;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:baseline">
+    <div class="logo-main">Metriq<span>Ops</span></div>
+    <div class="logo-sub">Prospect Hunter</div>
+  </div>
+  <div class="hstatus"><div class="dot"></div><span>Claude API</span></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div>
+      <span class="slabel">Setor / Nicho</span>
+      <input id="f-sector" placeholder="ex: moda, beleza...">
+      <div class="tags">
+        <button class="tag" onclick="pick('sector','Moda')">Moda</button>
+        <button class="tag" onclick="pick('sector','Beleza')">Beleza</button>
+        <button class="tag" onclick="pick('sector','Fitness')">Fitness</button>
+        <button class="tag" onclick="pick('sector','Casa')">Casa</button>
+        <button class="tag" onclick="pick('sector','Alimentação')">Alimentação</button>
+        <button class="tag" onclick="pick('sector','Eletrónicos')">Eletrónicos</button>
+      </div>
+    </div>
+    <div>
+      <span class="slabel">País / Mercado</span>
+      <input id="f-country" placeholder="ex: Portugal, Espanha...">
+      <div class="tags">
+        <button class="tag" onclick="pick('country','Portugal')">🇵🇹 PT</button>
+        <button class="tag" onclick="pick('country','Espanha')">🇪🇸 ES</button>
+        <button class="tag" onclick="pick('country','UK')">🇬🇧 UK</button>
+        <button class="tag" onclick="pick('country','Alemanha')">🇩🇪 DE</button>
+        <button class="tag" onclick="pick('country','França')">🇫🇷 FR</button>
+        <button class="tag" onclick="pick('country','EUA')">🇺🇸 EUA</button>
+        <button class="tag" onclick="pick('country','Itália')">🇮🇹 IT</button>
+        <button class="tag" onclick="pick('country','Holanda')">🇳🇱 NL</button>
+      </div>
+    </div>
+    <div>
+      <span class="slabel">Faturação Mensal</span>
+      <select id="f-rev">
+        <option value="5k">€5k – €10k</option>
+        <option value="10k">€10k – €30k</option>
+        <option value="30k" selected>€30k – €50k</option>
+        <option value="50k">€50k – €100k</option>
+        <option value="100k">€100k+</option>
+      </select>
+    </div>
+    <div>
+      <span class="slabel">Nº de Leads</span>
+      <select id="f-n">
+        <option value="5">5 leads</option>
+        <option value="8" selected>8 leads</option>
+        <option value="12">12 leads</option>
+      </select>
+    </div>
+    <button class="hunt-btn" id="huntBtn" onclick="hunt()">🎯 Iniciar Prospeção</button>
+    <div class="stats" id="statsBox" style="display:none">
+      <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Encontrados</div></div>
+      <div class="stat"><div class="stat-n" id="s-fit">0</div><div class="stat-l">Fit Alto</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <span style="font-size:13px;font-weight:500" id="res-label">Resultados</span>
+      <div style="display:flex;gap:8px">
+        <input id="srch" placeholder="Filtrar..." oninput="filterLeads()" style="width:150px;font-size:12px;padding:7px 10px">
+        <select id="sc-f" onchange="filterLeads()" style="width:120px;font-size:12px;padding:7px 10px">
+          <option value="">Todos</option>
+          <option value="hi">Alto (70%+)</option>
+          <option value="mid">Médio</option>
+          <option value="lo">Baixo</option>
+        </select>
+      </div>
+    </div>
+    <div class="results" id="results">
+      <div class="empty">
+        <div class="empty-icon">🎯</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:6px">Pronto para prospetar</div>
+        <div style="font-size:13px;line-height:1.7;max-width:280px">Escolhe setor e país, clica em <strong style="color:var(--copper)">Iniciar Prospeção</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allLeads = [];
+
+function pick(field, val) {
+  document.getElementById('f-' + field).value = val;
+}
+
+function scoreColor(s) {
+  if (s >= 70) return 'var(--green)';
+  if (s >= 50) return 'var(--amber)';
+  return 'var(--muted)';
+}
+
+async function hunt() {
+  const sector = document.getElementById('f-sector').value.trim();
+  const country = document.getElementById('f-country').value.trim();
+  if (!sector || !country) { toast('Preenche setor e país.'); return; }
+
+  const btn = document.getElementById('huntBtn');
+  btn.disabled = true;
+  btn.textContent = 'A procurar...';
+
+  document.getElementById('results').innerHTML = `
+    <div class="empty">
+      <div class="spinner"></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">A gerar leads de ${sector} em ${country}...<br><span style="font-size:11px">Pode demorar 15–30 segundos</span></div>
+    </div>`;
+
+  try {
+    const res = await fetch('/api/hunt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sector,
+        country,
+        revenue: document.getElementById('f-rev').value,
+        quantity: document.getElementById('f-n').value
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro na API');
+
+    allLeads = data.leads;
+    render(allLeads);
+    document.getElementById('s-total').textContent = allLeads.length;
+    document.getElementById('s-fit').textContent = allLeads.filter(l => l.fit_score >= 70).length;
+    document.getElementById('statsBox').style.display = 'grid';
+
+  } catch (err) {
+    document.getElementById('results').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div style="font-size:13px;max-width:300px">${err.message}</div></div>`;
+    toast('Erro: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🎯 Iniciar Prospeção';
+}
+
+function filterLeads() {
+  const q = document.getElementById('srch').value.toLowerCase();
+  const sc = document.getElementById('sc-f').value;
+  render(allLeads.filter(l => {
+    if (q && !l.company.toLowerCase().includes(q) && !l.founder_name.toLowerCase().includes(q)) return false;
+    if (sc === 'hi' && l.fit_score < 70) return false;
+    if (sc === 'mid' && (l.fit_score < 40 || l.fit_score >= 70)) return false;
+    if (sc === 'lo' && l.fit_score >= 40) return false;
+    return true;
+  }));
+}
+
+function render(leads) {
+  const area = document.getElementById('results');
+  document.getElementById('res-label').textContent = leads.length + ' lead' + (leads.length !== 1 ? 's' : '') + ' encontrado' + (leads.length !== 1 ? 's' : '');
+  if (!leads.length) {
+    area.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div style="font-size:13px">Sem resultados.</div></div>';
+    return;
+  }
+  area.innerHTML = '';
+  leads.forEach((l, i) => {
+    const ini = l.founder_name.split(' ').slice(0,2).map(n=>n[0]).join('');
+    const col = scoreColor(l.fit_score);
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.id = 'c' + i;
+    el.innerHTML = `
+      <div class="card-head" onclick="toggle(${i})">
+        <div class="avatar">${ini}</div>
+        <div class="card-info">
+          <div class="card-name">${l.company}</div>
+          <div class="card-sub">${l.founder_name} · ${l.founder_role} · ${l.city||''}</div>
+          <div class="card-badges">
+            <span class="badge b-c">${l.sector||''}</span>
+            <span class="badge b-g">${l.revenue}</span>
+            <span class="badge b-b">${l.platform}</span>
+            <span class="badge b-m">${l.ads}</span>
+          </div>
+        </div>
+        <div class="score">
+          <div class="score-n" style="color:${col}">${l.fit_score}%</div>
+          <div class="score-l">fit ICP</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="dg">
+          <div class="di"><span class="dl">Website</span><span class="dv"><a href="https://${l.url}" target="_blank">${l.url} →</a></span></div>
+          <div class="di"><span class="dl">LinkedIn</span><span class="dv"><a href="https://${l.linkedin}" target="_blank">Ver perfil →</a></span></div>
+          <div class="di"><span class="dl">Fit Positivo</span><span class="dv" style="color:var(--green)">${(l.fit_reasons||[]).map(r=>'✓ '+r).join('<br>')}</span></div>
+          <div class="di"><span class="dl">Red Flags</span><span class="dv" style="color:${l.red_flags&&l.red_flags.length?'var(--red)':'var(--muted)'}">
+            ${(l.red_flags||[]).length?l.red_flags.map(r=>'✗ '+r).join('<br>'):'Sem red flags'}
+          </span></div>
+        </div>
+        <div class="mtabs">
+          <button class="mtab on" onclick="setMsg(${i},'linkedin',this)">LinkedIn</button>
+          <button class="mtab" onclick="setMsg(${i},'email',this)">Email Frio</button>
+          <button class="mtab" onclick="setMsg(${i},'followup',this)">Follow-up</button>
+        </div>
+        <div class="msg-box" id="msg${i}">${l.message_linkedin||''}</div>
+        <div class="acts">
+          <button class="btn-c" id="cb${i}" onclick="copyMsg(${i})">📋 Copiar</button>
+          <button class="btn-l" onclick="window.open('https://${l.linkedin}','_blank')">🔗 LinkedIn</button>
+        </div>
+      </div>`;
+    area.appendChild(el);
+  });
+}
+
+function toggle(i) {
+  const c = document.getElementById('c'+i);
+  const open = c.classList.contains('open');
+  document.querySelectorAll('.card').forEach(x=>x.classList.remove('open'));
+  if (!open) c.classList.add('open');
+}
+
+function setMsg(i, type, el) {
+  const l = allLeads[i];
+  el.closest('.mtabs').querySelectorAll('.mtab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('msg'+i).textContent =
+    type==='linkedin' ? l.message_linkedin :
+    type==='email' ? l.message_email : l.message_followup;
+}
+
+function copyMsg(i) {
+  navigator.clipboard.writeText(document.getElementById('msg'+i).textContent).then(()=>{
+    const b = document.getElementById('cb'+i);
+    b.textContent='✓ Copiado!'; b.classList.add('done');
+    setTimeout(()=>{b.textContent='📋 Copiar';b.classList.remove('done');},2500);
+    toast('Mensagem copiada!');
+  });
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
